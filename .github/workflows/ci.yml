@@ -1,0 +1,54 @@
+name: CI
+
+# The unit suite is dependency-free by design (see README), so this workflow
+# never runs `npm install` for it — cloning the repo is the only setup a
+# contributor or a reviewer needs to reproduce these checks locally.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  lint-and-test:
+    name: Lint + test (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: ['20', '22']
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Lint (syntax + project conventions)
+        run: npm run lint
+
+      - name: Unit + structural tests
+        run: npm test
+
+  package:
+    name: Build extension zip
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build dist/ai-browser-governance-<version>.zip
+        run: npm run package
+
+      - name: Upload packaged extension
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-browser-governance-extension
+          path: dist/*.zip
+          retention-days: 14
