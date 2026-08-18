@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AI Browser Governance — Console</title>
+  <link rel="stylesheet" href="../shared.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+<aside>
+  <div class="brand">
+    <strong>AI Browser Governance</strong>
+    <span class="muted" id="version"></span>
+  </div>
+  <nav>
+    <a href="#overview" data-view="overview" class="active">Overview</a>
+    <a href="#policy" data-view="policy">Policy</a>
+    <a href="#rules" data-view="rules">Rules</a>
+    <a href="#data" data-view="data">Data protection</a>
+    <a href="#audit" data-view="audit">Audit log</a>
+    <a href="#extensions" data-view="extensions">Extensions</a>
+    <a href="#advanced" data-view="advanced">Advanced</a>
+  </nav>
+  <div class="managed panel" id="managedNote" hidden></div>
+</aside>
+
+<main>
+  <section id="view-overview" class="view">
+    <h1>Overview</h1>
+    <p class="muted">What agentic activity this browser has seen, and what the current posture does about it.</p>
+    <div class="cards" id="overviewCards"></div>
+    <div class="panel pad">
+      <div class="row"><h3>Posture</h3><span class="spacer"></span><span id="postureBadge" class="badge"></span></div>
+      <div class="modes" id="modePicker"></div>
+    </div>
+    <div class="panel">
+      <div class="row pad"><h3>Latest decisions</h3><span class="spacer"></span><a href="#audit">open audit log</a></div>
+      <table><thead><tr><th>When</th><th>Action</th><th>Site</th><th>Actor</th><th>Decision</th><th>Why</th></tr></thead>
+        <tbody id="overviewRows"></tbody></table>
+    </div>
+  </section>
+
+  <section id="view-policy" class="view" hidden>
+    <h1>Policy</h1>
+    <p class="muted">Posture, approval behaviour and activity budgets. Changes apply immediately to every tab.</p>
+    <form class="panel pad grid" id="policyForm">
+      <div class="field">
+        <label for="mode">Mode</label>
+        <select id="mode" name="mode">
+          <option value="monitor">Monitor — observe and record only</option>
+          <option value="guardrail">Guardrail — enforce the rule set</option>
+          <option value="lockdown">Lockdown — every agent action needs approval</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="defaultDecision">Default decision for unmatched actions</label>
+        <select id="defaultDecision" name="defaultDecision">
+          <option value="allow">Allow silently</option>
+          <option value="log">Log</option>
+          <option value="warn">Warn</option>
+          <option value="require_approval">Require approval</option>
+          <option value="block">Block</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="minConfidence">Agent-detection threshold <span class="muted" id="minConfidenceValue"></span></label>
+        <input type="range" id="minConfidence" min="0.2" max="0.95" step="0.05">
+        <p class="hint">Lower catches more automation and produces more false positives.</p>
+      </div>
+      <fieldset>
+        <legend>Detection surfaces</legend>
+        <label class="check"><input type="checkbox" id="deepInstrumentation"> Instrument page APIs (click, value writes, clipboard)</label>
+        <label class="check"><input type="checkbox" id="networkWatch"> Watch model-provider network egress</label>
+        <label class="check"><input type="checkbox" id="extensionInventory"> Inventory installed extensions</label>
+      </fieldset>
+      <fieldset>
+        <legend>Approvals</legend>
+        <label class="inline">Timeout <input type="number" id="timeoutSeconds" min="10" max="600" step="5"> seconds</label>
+        <label class="inline">On timeout
+          <select id="onTimeout"><option value="block">Deny</option><option value="allow">Allow</option></select>
+        </label>
+        <label class="check"><input type="checkbox" id="allowRememberForSession"> Let a human approve an action shape for the rest of the session</label>
+      </fieldset>
+      <fieldset>
+        <legend>Budgets</legend>
+        <label class="inline">Max agent actions per minute <input type="number" id="maxActionsPerMinute" min="1" max="1000"></label>
+        <label class="inline">Max navigations per session <input type="number" id="maxNavigationsPerSession" min="1" max="10000"></label>
+        <label class="inline">Max risk score per session <input type="number" id="maxRiskScorePerSession" min="10" max="100000"></label>
+      </fieldset>
+      <fieldset>
+        <legend>Site classes</legend>
+        <label>Extra AI providers <textarea id="aiProviders" rows="2" placeholder="one host or pattern per line"></textarea></label>
+        <label>Sensitive sites <textarea id="sensitive" rows="4"></textarea></label>
+        <label>Agent allowlist <textarea id="allowlist" rows="2"></textarea></label>
+        <label>Agent denylist <textarea id="denylist" rows="2"></textarea></label>
+      </fieldset>
+      <div class="row">
+        <button class="primary" id="savePolicy" type="submit">Save policy</button>
+        <button class="ghost" id="resetPolicy" type="button">Reset to defaults</button>
+        <span class="spacer"></span>
+        <span id="policyStatus" class="muted"></span>
+      </div>
+    </form>
+  </section>
+
+  <section id="view-rules" class="view" hidden>
+    <h1>Rules</h1>
+    <p class="muted">Evaluated top to bottom. The most restrictive match wins, except for override rules, which win outright.</p>
+    <div class="panel">
+      <table><thead><tr><th></th><th>Rule</th><th>When</th><th>Then</th><th></th></tr></thead>
+        <tbody id="rulesRows"></tbody></table>
+    </div>
+    <div class="row">
+      <button id="addRule">Add rule</button>
+      <span class="spacer"></span>
+      <span class="muted" id="rulesStatus"></span>
+    </div>
+    <div class="panel pad" id="ruleEditor" hidden>
+      <h3>Edit rule</h3>
+      <textarea id="ruleJson" rows="16"></textarea>
+      <div class="row">
+        <button class="primary" id="saveRule">Save rule</button>
+        <button class="ghost" id="cancelRule">Cancel</button>
+        <span class="spacer"></span>
+        <span class="muted" id="ruleError"></span>
+      </div>
+    </div>
+  </section>
+
+  <section id="view-data" class="view" hidden>
+    <h1>Data protection</h1>
+    <p class="muted">What counts as sensitive when an agent types, submits, or sends content to a model provider.</p>
+    <div class="panel pad grid">
+      <label class="check"><input type="checkbox" id="dlpEnabled"> Scan agent-handled content</label>
+      <label class="check"><input type="checkbox" id="storeSamples"> Keep a redacted sample of scanned text in the audit log</label>
+      <label class="inline">Max characters scanned per action <input type="number" id="maxScanChars" min="500" max="200000" step="500"></label>
+      <div>
+        <h3>Built-in detectors</h3>
+        <div class="detectors" id="detectors"></div>
+      </div>
+      <div>
+        <h3>Custom patterns</h3>
+        <textarea id="customPatterns" rows="8" placeholder='[{"id":"employee_id","name":"Employee ID","severity":"medium","regex":"EMP-[0-9]{6}"}]'></textarea>
+        <p class="hint">JSON array. Each entry needs an id, name, severity (low/medium/high/critical) and a JavaScript regex.</p>
+      </div>
+      <div class="row">
+        <button class="primary" id="saveDlp">Save data settings</button>
+        <span class="spacer"></span>
+        <span class="muted" id="dlpStatus"></span>
+      </div>
+    </div>
+    <div class="panel pad">
+      <h3>Test the scanner</h3>
+      <textarea id="dlpTestInput" rows="4" placeholder="Paste text to see what would be detected…"></textarea>
+      <div class="row"><button id="dlpTest">Scan text</button><span class="spacer"></span></div>
+      <div id="dlpTestResult" class="findings"></div>
+    </div>
+  </section>
+
+  <section id="view-audit" class="view" hidden>
+    <h1>Audit log</h1>
+    <p class="muted">Hash-chained, append-only. Verification recomputes every link, so an edited or removed record shows up.</p>
+    <div class="row toolbar">
+      <input id="auditSearch" placeholder="Search URL, reason or action…">
+      <select id="auditDecision">
+        <option value="">All decisions</option>
+        <option value="block">Blocked</option>
+        <option value="require_approval">Approval</option>
+        <option value="warn">Warned</option>
+        <option value="log">Logged</option>
+        <option value="allow">Allowed</option>
+      </select>
+      <select id="auditActor">
+        <option value="">All actors</option>
+        <option value="agent">Agent</option>
+        <option value="human">Human</option>
+        <option value="unknown">Unknown</option>
+      </select>
+      <span class="spacer"></span>
+      <button id="verifyChain">Verify chain</button>
+      <button id="exportNdjson">Export NDJSON</button>
+      <button id="exportCsv">Export CSV</button>
+      <button id="clearAudit" class="danger">Clear</button>
+    </div>
+    <p id="verifyResult" class="muted"></p>
+    <div class="panel">
+      <table><thead><tr><th>#</th><th>When</th><th>Action</th><th>Site</th><th>Actor</th><th>Risk</th><th>Decision</th><th>Why</th></tr></thead>
+        <tbody id="auditRows"></tbody></table>
+    </div>
+    <div class="row"><button id="auditMore" class="ghost">Load more</button><span class="spacer"></span><span class="muted" id="auditCount"></span></div>
+  </section>
+
+  <section id="view-extensions" class="view" hidden>
+    <h1>Extensions</h1>
+    <p class="muted">Other extensions are the most capable agents in a browser. Capability score weighs permissions that let one drive your session.</p>
+    <div class="row toolbar">
+      <button id="refreshInventory">Refresh inventory</button>
+      <span class="spacer"></span>
+      <span class="muted" id="inventoryMeta"></span>
+    </div>
+    <div class="panel">
+      <table><thead><tr><th>Extension</th><th>Capability</th><th>Signals</th><th>Access</th><th>Install</th><th></th></tr></thead>
+        <tbody id="inventoryRows"></tbody></table>
+    </div>
+  </section>
+
+  <section id="view-advanced" class="view" hidden>
+    <h1>Advanced</h1>
+    <div class="panel pad grid">
+      <h3>Audit retention and forwarding</h3>
+      <label class="inline">Keep records for <input type="number" id="retentionDays" min="1" max="3650"> days</label>
+      <label class="inline">Maximum records <input type="number" id="maxRecords" min="100" max="200000" step="100"></label>
+      <label class="check"><input type="checkbox" id="forwardEnabled"> Forward sealed records to a collector</label>
+      <label class="inline">Collector URL <input type="url" id="forwardUrl" placeholder="https://siem.example.com/ingest"></label>
+      <label class="inline">Header <input id="forwardHeaderName" placeholder="Authorization"> <input id="forwardHeaderValue" placeholder="Bearer …"></label>
+      <p class="hint">Records are posted as NDJSON in batches. A failing collector never blocks a decision.</p>
+      <div class="row"><button class="primary" id="saveAdvanced">Save</button><span class="spacer"></span><span class="muted" id="advancedStatus"></span></div>
+    </div>
+    <div class="panel pad grid">
+      <h3>Effective policy</h3>
+      <p class="hint">Read-only view of the merged default → local → managed layers actually in force.</p>
+      <textarea id="effectivePolicy" rows="18" readonly></textarea>
+      <div class="row">
+        <button id="exportPolicy">Export policy JSON</button>
+        <button id="importPolicy">Import policy JSON</button>
+        <input type="file" id="policyFile" accept="application/json" hidden>
+      </div>
+    </div>
+  </section>
+</main>
+<script type="module" src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+body { width: 360px; padding: 12px; display: grid; gap: 10px; overflow-x: hidden; }
+h1 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+header { display: grid; gap: 2px; }
+header p { margin: 0; font-size: 11.5px; }
+section.panel { padding: 10px; display: grid; gap: 8px; }
+.stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.stat { background: var(--chip); border-radius: 8px; padding: 6px 8px; }
+.stat b { display: block; font-size: 15px; line-height: 1.2; }
+.stat span { overflow-wrap: anywhere; }
+.stat span { font-size: 10.5px; color: var(--muted); }
+.events { list-style: none; margin: 0; padding: 0; max-height: 210px; overflow: auto; }
+.events li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 8px; padding: 6px 2px; border-bottom: 1px solid var(--line); }
+.events li:last-child { border-bottom: 0; }
+.events .what { font-weight: 600; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.events .why { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
+.events li.empty { display: block; }
+footer { font-size: 12px; }
+footer select { padding: 4px 6px; }
+#sessionLine { margin: 0; font-size: 11.5px; overflow-wrap: anywhere; }
+#tabHost { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+section.panel > .row { min-width: 0; }

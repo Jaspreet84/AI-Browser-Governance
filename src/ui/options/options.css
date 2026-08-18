@@ -1,0 +1,52 @@
+body { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+aside {
+  border-right: 1px solid var(--line); background: var(--panel); padding: 16px 12px;
+  display: flex; flex-direction: column; gap: 14px; position: sticky; top: 0; height: 100vh;
+}
+.brand { display: grid; gap: 2px; padding: 0 6px; }
+.brand strong { font-size: 13px; }
+.brand span { font-size: 11px; }
+nav { display: grid; gap: 2px; }
+nav a { padding: 7px 10px; border-radius: 8px; text-decoration: none; color: var(--ink); font-weight: 550; font-size: 12.5px; }
+nav a:hover { background: var(--chip); }
+nav a.active { background: color-mix(in srgb, var(--accent) 14%, transparent); color: var(--accent); }
+.managed { margin-top: auto; padding: 10px; font-size: 11.5px; color: var(--warn); }
+main { padding: 22px 26px 60px; max-width: 1080px; }
+.view { display: grid; gap: 14px; }
+.view[hidden] { display: none; }
+.view > p.muted { margin: -6px 0 0; }
+.pad { padding: 14px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; }
+.card b { display: block; font-size: 22px; line-height: 1.1; }
+.card span { font-size: 11.5px; color: var(--muted); }
+.modes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+.mode { text-align: left; padding: 10px 12px; display: grid; gap: 3px; }
+.mode strong { font-size: 12.5px; }
+.mode span { font-size: 11px; color: var(--muted); font-weight: 400; }
+.mode.active { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.field { display: grid; gap: 5px; }
+.field label { font-weight: 600; font-size: 12.5px; }
+.hint { margin: 2px 0 0; font-size: 11.5px; color: var(--muted); }
+fieldset { border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; display: grid; gap: 8px; }
+legend { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); padding: 0 6px; }
+label.check { display: flex; gap: 8px; align-items: center; font-size: 12.5px; font-weight: 500; }
+label.inline { display: flex; gap: 8px; align-items: center; font-size: 12.5px; font-weight: 500; }
+label.inline input[type=number] { width: 100px; }
+label.inline input[type=url], label.inline input:not([type=number]) { flex: 1; min-width: 120px; }
+fieldset label textarea { margin-top: 4px; }
+.toolbar { flex-wrap: wrap; }
+.toolbar input { min-width: 220px; flex: 1; }
+.detectors { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px; margin-top: 6px; }
+.findings { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.finding { font-size: 11.5px; border-radius: 999px; padding: 3px 9px; background: var(--chip); }
+.finding.critical, .finding.high { background: color-mix(in srgb, var(--bad) 16%, transparent); color: var(--bad); }
+.finding.medium { background: color-mix(in srgb, var(--warn) 18%, transparent); color: var(--warn); }
+td.why { max-width: 320px; color: var(--muted); font-size: 11.5px; }
+td.num { font-variant-numeric: tabular-nums; color: var(--muted); }
+tbody td:last-child { white-space: nowrap; text-align: right; }
+tbody td:last-child button { padding: 4px 9px; margin-left: 4px; }
+tr.blocked td:first-child { box-shadow: inset 3px 0 0 var(--bad); }
+.score { font-variant-numeric: tabular-nums; font-weight: 650; }
+.score.hot { color: var(--bad); }
+.score.warm { color: var(--warn); }

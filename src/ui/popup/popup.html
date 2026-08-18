@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AI Browser Governance</title>
+  <link rel="stylesheet" href="../shared.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header>
+    <div class="row">
+      <span class="dot" id="statusDot"></span>
+      <h1>AI Browser Governance</h1>
+      <span class="spacer"></span>
+      <span class="badge" id="modeBadge">…</span>
+    </div>
+    <p class="muted" id="statusLine">Loading state…</p>
+  </header>
+
+  <section class="panel" id="tabPanel">
+    <div class="row">
+      <h2 id="tabHost">This tab</h2>
+      <span class="spacer"></span>
+      <span class="badge" id="siteClass"></span>
+    </div>
+    <div class="stats" id="tabStats"></div>
+    <p class="muted" id="sessionLine">No agent activity seen in this tab.</p>
+    <div class="row">
+      <button id="endSession" class="ghost" disabled>End agent session</button>
+      <span class="spacer"></span>
+      <button id="killSwitch" class="danger">Block all agents</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="row">
+      <h3>Recent decisions</h3>
+      <span class="spacer"></span>
+      <a href="#" id="openAudit">full log</a>
+    </div>
+    <ul class="events" id="events"><li class="empty">Nothing recorded yet.</li></ul>
+  </section>
+
+  <footer class="row">
+    <label class="row" for="modeSelect">Mode
+      <select id="modeSelect">
+        <option value="monitor">Monitor</option>
+        <option value="guardrail">Guardrail</option>
+        <option value="lockdown">Lockdown</option>
+      </select>
+    </label>
+    <span class="spacer"></span>
+    <button id="openOptions" class="ghost">Console</button>
+  </footer>
+  <script type="module" src="popup.js"></script>
+</body>
+</html>
