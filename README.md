@@ -1,5 +1,8 @@
 # AI Browser Governance
 
+[![CI](https://github.com/Jaspreet84/AI-Browser-Governance/actions/workflows/ci.yml/badge.svg)](https://github.com/Jaspreet84/AI-Browser-Governance/actions/workflows/ci.yml)
+[![Smoke test](https://github.com/Jaspreet84/AI-Browser-Governance/actions/workflows/smoke.yml/badge.svg)](https://github.com/Jaspreet84/AI-Browser-Governance/actions/workflows/smoke.yml)
+
 A Chrome extension that gives you visibility and control over **AI agents acting inside your browser**.
 
 Agentic browsing — Claude in Chrome, ChatGPT Atlas/Operator, Gemini, Copilot, browser-use and
@@ -192,6 +195,18 @@ npm run smoke   # load the extension in Chromium and drive it like an agent
 headless box). It loads the unpacked extension, scripts a destructive click and a
 credential write on a fixture page, then asserts the approval prompt appeared, the
 write was refused, the secret never reached the log, and the hash chain verifies.
+
+### Continuous integration
+
+Two workflows under `.github/workflows/` run on every push and pull request:
+
+| Workflow | What it runs | Dependencies installed |
+| --- | --- | --- |
+| `ci.yml` | `npm run lint` and `npm test` on Node 20 and 22, then builds and uploads the packaged zip | none — the unit suite has zero dependencies by design |
+| `smoke.yml` | `npm run smoke` under Xvfb, driving the real extension in Chromium | Playwright, installed transiently (`npm install --no-save`) so it never becomes a project dependency |
+
+Both are safe to run locally with the same commands shown above; CI does nothing
+a contributor cannot reproduce on their own machine.
 
 ## Known limits
 
