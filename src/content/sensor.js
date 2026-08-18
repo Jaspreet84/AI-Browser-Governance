@@ -20,7 +20,7 @@
   window.__abgSensorInstalled = true;
 
   /* Mirrors src/core/constants.js — content scripts cannot import ES modules.
-     tests/content-constants.test.js fails if these drift apart. */
+     tests/structure.test.js fails if the values listed there drift apart. */
   const CHANNEL = 'abg:bridge:v1';
   const MSG = {
     ACTION_PROPOSED: 'action:proposed',
