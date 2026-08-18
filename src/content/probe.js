@@ -31,7 +31,12 @@
   ];
   const CDP_PREFIXES = ['$cdc_', 'cdc_adoQpoasnfa76pfcZLmcfl_', '$chrome_asyncScriptInfo'];
 
-  const AI_HOST_RE = /(^|\.)(api\.anthropic\.com|api\.openai\.com|api\.mistral\.ai|api\.cohere\.ai|api\.perplexity\.ai|api\.together\.xyz|api\.groq\.com|api\.deepseek\.com|api\.x\.ai|generativelanguage\.googleapis\.com|openrouter\.ai|api-inference\.huggingface\.co)$/i;
+  // Kept in step with AI_API_HOSTS in src/core/agent-signals.js — the two are
+  // duplicated across the module boundary (content scripts cannot import), so a
+  // provider added there must be added here too. Regional forms (Bedrock, Azure
+  // OpenAI) are matched as suffix patterns rather than fixed hosts.
+  const AI_HOST_RE = /(^|\.)(api\.anthropic\.com|api\.openai\.com|api\.mistral\.ai|api\.cohere\.ai|api\.perplexity\.ai|api\.together\.xyz|api\.groq\.com|api\.deepseek\.com|api\.x\.ai|generativelanguage\.googleapis\.com|aiplatform\.googleapis\.com|openrouter\.ai|api-inference\.huggingface\.co)$/i;
+  const isAiHost = (host) => AI_HOST_RE.test(host) || /(^|\.)openai\.azure\.com$/i.test(host) || /^bedrock-runtime\.[a-z0-9-]+\.amazonaws\.com$/i.test(host);
 
   const report = (kind, payload) => {
     try {
@@ -248,7 +253,7 @@
       try {
         const url = typeof input === 'string' ? input : input?.url || '';
         const host = url ? new URL(url, location.href).hostname : '';
-        if (AI_HOST_RE.test(host)) {
+        if (isAiHost(host)) {
           report('ai_fetch', { url: String(url).slice(0, 300), method: init?.method || 'GET', caller: callerFrame() });
         }
       } catch {
@@ -261,7 +266,7 @@
     function abgXhrOpen(method, url, ...rest) {
       try {
         const host = url ? new URL(url, location.href).hostname : '';
-        if (AI_HOST_RE.test(host)) {
+        if (isAiHost(host)) {
           report('ai_fetch', { url: String(url).slice(0, 300), method, caller: callerFrame(), via: 'xhr' });
         }
       } catch {
