@@ -1,0 +1,157 @@
+{
+  "type": "object",
+  "properties": {
+    "policy": {
+      "title": "AI Browser Governance policy",
+      "description": "Governance policy pushed by an administrator. Anything set here overrides the user's local settings; set locked=true to ignore local settings entirely.",
+      "type": "object",
+      "properties": {
+        "version": { "type": "integer" },
+        "locked": {
+          "title": "Lock policy",
+          "description": "When true, users cannot change any setting locally.",
+          "type": "boolean"
+        },
+        "mode": {
+          "title": "Enforcement mode",
+          "type": "string",
+          "enum": ["monitor", "guardrail", "lockdown"]
+        },
+        "defaultDecision": {
+          "title": "Decision for actions no rule matches",
+          "type": "string",
+          "enum": ["allow", "log", "warn", "require_approval", "block"]
+        },
+        "agentDetection": {
+          "type": "object",
+          "properties": {
+            "minConfidence": { "type": "number" },
+            "deepInstrumentation": { "type": "boolean" },
+            "networkWatch": { "type": "boolean" },
+            "extensionInventory": { "type": "boolean" }
+          }
+        },
+        "siteClasses": {
+          "type": "object",
+          "properties": {
+            "aiProviders": { "type": "array", "items": { "type": "string" } },
+            "sensitive": { "type": "array", "items": { "type": "string" } },
+            "allowlist": { "type": "array", "items": { "type": "string" } },
+            "denylist": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "dlp": {
+          "type": "object",
+          "properties": {
+            "enabled": { "type": "boolean" },
+            "enabledDetectors": { "type": "array", "items": { "type": "string" } },
+            "maxScanChars": { "type": "integer" },
+            "storeSamples": { "type": "boolean" },
+            "customPatterns": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "name": { "type": "string" },
+                  "severity": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+                  "regex": { "type": "string" },
+                  "flags": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "budgets": {
+          "type": "object",
+          "properties": {
+            "maxActionsPerMinute": { "type": "integer" },
+            "maxNavigationsPerSession": { "type": "integer" },
+            "maxRiskScorePerSession": { "type": "integer" }
+          }
+        },
+        "approvals": {
+          "type": "object",
+          "properties": {
+            "timeoutSeconds": { "type": "integer" },
+            "onTimeout": { "type": "string", "enum": ["allow", "block"] },
+            "allowRememberForSession": { "type": "boolean" }
+          }
+        },
+        "notifications": {
+          "type": "object",
+          "properties": {
+            "onBlock": { "type": "boolean" },
+            "onApprovalRequest": { "type": "boolean" },
+            "onAgentSessionStart": { "type": "boolean" }
+          }
+        },
+        "network": {
+          "type": "object",
+          "properties": {
+            "blockModelApisInLockdown": { "type": "boolean" },
+            "scanEgressBodies": { "type": "boolean" }
+          }
+        },
+        "audit": {
+          "type": "object",
+          "properties": {
+            "retentionDays": { "type": "integer" },
+            "maxRecords": { "type": "integer" },
+            "forward": {
+              "type": "object",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "url": { "type": "string" },
+                "headerName": { "type": "string" },
+                "headerValue": { "type": "string" },
+                "batchSize": { "type": "integer" }
+              }
+            }
+          }
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "description": { "type": "string" },
+              "enabled": { "type": "boolean" },
+              "override": { "type": "boolean" },
+              "when": {
+                "type": "object",
+                "properties": {
+                  "actorKinds": { "type": "array", "items": { "type": "string" } },
+                  "minConfidence": { "type": "number" },
+                  "actionTypes": { "type": "array", "items": { "type": "string" } },
+                  "siteClasses": { "type": "array", "items": { "type": "string" } },
+                  "urlPatterns": { "type": "array", "items": { "type": "string" } },
+                  "excludeUrlPatterns": { "type": "array", "items": { "type": "string" } },
+                  "targetFlags": { "type": "array", "items": { "type": "string" } },
+                  "allTargetFlags": { "type": "array", "items": { "type": "string" } },
+                  "dlpAtLeast": { "type": "string", "enum": ["low", "medium", "high", "critical"] },
+                  "dlpDetectors": { "type": "array", "items": { "type": "string" } },
+                  "riskAtLeast": { "type": "integer" },
+                  "extensionIdIn": { "type": "array", "items": { "type": "string" } },
+                  "extensionIdNotIn": { "type": "array", "items": { "type": "string" } },
+                  "hasExtensionAttribution": { "type": "boolean" }
+                }
+              },
+              "then": {
+                "type": "object",
+                "properties": {
+                  "decision": { "type": "string", "enum": ["allow", "log", "warn", "require_approval", "block"] },
+                  "reason": { "type": "string" },
+                  "remediation": { "type": "string", "enum": ["redact"] },
+                  "requireJustification": { "type": "boolean" },
+                  "notify": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

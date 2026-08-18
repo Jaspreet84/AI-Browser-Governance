@@ -1,0 +1,88 @@
+{
+  "_comment": "Example administrator policy. Deploy through Chrome Enterprise policy (3rdparty > extensions > <EXTENSION_ID> > policy). Every field is optional; anything omitted falls back to the extension's default.",
+  "policy": {
+    "version": 1,
+    "locked": true,
+    "mode": "guardrail",
+    "defaultDecision": "log",
+    "agentDetection": {
+      "minConfidence": 0.55,
+      "deepInstrumentation": true,
+      "networkWatch": true,
+      "extensionInventory": true
+    },
+    "siteClasses": {
+      "aiProviders": ["llm.internal.example.com"],
+      "sensitive": [
+        "console.aws.amazon.com",
+        "admin.google.com",
+        "*.workday.com",
+        "finance.example.com",
+        "*.example.com/admin/*"
+      ],
+      "allowlist": ["docs.example.com", "wiki.example.com"],
+      "denylist": ["payroll.example.com"]
+    },
+    "dlp": {
+      "enabled": true,
+      "storeSamples": false,
+      "customPatterns": [
+        {
+          "id": "employee_id",
+          "name": "Employee ID",
+          "severity": "medium",
+          "regex": "\\bEMP-[0-9]{6}\\b"
+        },
+        {
+          "id": "customer_account",
+          "name": "Customer account number",
+          "severity": "high",
+          "regex": "\\bACCT-[0-9]{4}-[0-9]{4}\\b"
+        }
+      ]
+    },
+    "budgets": {
+      "maxActionsPerMinute": 45,
+      "maxNavigationsPerSession": 80,
+      "maxRiskScorePerSession": 1200
+    },
+    "approvals": {
+      "timeoutSeconds": 45,
+      "onTimeout": "block",
+      "allowRememberForSession": false
+    },
+    "network": {
+      "blockModelApisInLockdown": true,
+      "scanEgressBodies": true
+    },
+    "audit": {
+      "retentionDays": 90,
+      "maxRecords": 20000,
+      "forward": {
+        "enabled": true,
+        "url": "https://siem.example.com/collect/ai-governance",
+        "headerName": "Authorization",
+        "headerValue": "Bearer REPLACE_ME",
+        "batchSize": 25
+      }
+    },
+    "rules": [
+      {
+        "id": "org-no-agent-on-payroll",
+        "description": "Agents may never act on the payroll system",
+        "when": { "urlPatterns": ["payroll.example.com"], "actorKinds": ["agent", "unknown"], "minConfidence": 0.4 },
+        "then": { "decision": "block", "reason": "Payroll is off limits to automated agents", "notify": true }
+      },
+      {
+        "id": "org-customer-data-to-models",
+        "description": "Customer identifiers must not reach a model provider",
+        "when": {
+          "siteClasses": ["ai_provider"],
+          "actionTypes": ["ai.prompt_submit", "input.fill", "form.submit", "network.ai_egress"],
+          "dlpDetectors": ["customer_account"]
+        },
+        "then": { "decision": "block", "reason": "Customer account numbers may not be sent to a model provider", "notify": true }
+      }
+    ]
+  }
+}
